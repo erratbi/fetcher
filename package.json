@@ -1,0 +1,37 @@
+{
+	"name": "fetcher",
+	"version": "1.0.0",
+	"description": "fetching for movies on gomovies",
+	"main": "index.js",
+	"repository": "https://github.com/erratbi/fetcher",
+	"author": "erratbi",
+	"license": "MIT",
+	"scripts": {
+		"start": "nodemon -w src --exec babel-node -- src/index.js"
+	},
+	"devDependencies": {
+		"babel-cli": "^6.26.0",
+		"babel-eslint": "^8.0.2",
+		"babel-preset-env": "^1.6.1",
+		"eslint": "^4.11.0",
+		"eslint-config-airbnb": "^16.1.0",
+		"eslint-config-prettier": "^2.8.0",
+		"eslint-plugin-import": "^2.8.0",
+		"eslint-plugin-jsx-a11y": "^6.0.2",
+		"eslint-plugin-prettier": "^2.3.1",
+		"nodemon": "^1.12.1",
+		"prettier": "^1.8.2"
+	},
+	"dependencies": {
+		"cheerio": "^1.0.0-rc.2",
+		"express": "^4.16.2",
+		"lodash": "^4.17.4",
+		"request": "^2.83.0",
+		"request-promise": "^4.2.2"
+	},
+	"babel": {
+		"presets": [
+			"env"
+		]
+	}
+}
