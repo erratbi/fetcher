@@ -1,33 +1,30 @@
-import request from 'request';
-import express from 'express';
-import rp from 'request-promise';
 import _ from 'lodash';
-import cheerio from 'cheerio';
+import MovieCollection from './models/MovieCollection';
+import { resolve } from 'path';
+import fs from 'fs';
 
-export const slugify = text => text
-           .toString()
-           .toLowerCase()
-           .replace(/\s+|'/g, "-") // Replace spaces with -
-           .replace(/[^\w\-]+/g, "") // Remove all non-word chars
-           .replace(/\-\-+/g, "-") // Replace multiple - with single -
-           .replace(/^-+/, "") // Trim - from start of text
-           .replace(/-+$/, ""); // Trim - from end of text
+const writeToFile = (file, content) => {
+	fs.writeFile(file, content, 'utf8', function(err) {
+		if (err) {
+			return console.log(err);
+		}
 
+		console.log('The file was saved!');
+	});
+};
 
-export const getRawUrl = async (uri) => {
-    const jq = await rp({ uri, transform: body => cheerio.load(body)});
-    const rawUrl = jq("#player_1 iframe").data('src');
-    const $ = await rp({ uri: rawUrl, transform: body => cheerio.load(body)});
-    console.log($('*').html());
-    return _.get(/\[{"file":"(.+?)",/gi.exec($('#video_player').next('script').html()), '[1]', '');
-}
-
-export const getStreamUrl = async (uri, cb) => {
-    const url = await getRawUrl(uri); 
-    return request({
-        url,
-        followRedirect: false
-    }, (err, resp) => {
-        return cb(resp.headers.location);
-    });
-}
+(async () => {
+	const pages = 353;
+	let data = [];
+	for (let i = 253; i <= pages; i++) {
+		let t0 = Date.now();
+		const movies = await MovieCollection.fetch(i);
+		let t1 = Date.now();
+		let diff = (t1 - t0) / 1000;
+		t0 = Date.now();
+		let eta = (pages - i) * diff;
+		data = _.concat(data, movies);
+		console.log(`Page ${i} done in ${diff} s / time remaning ${eta} s`);
+		writeToFile(resolve(__dirname, '../data/data6.json'), JSON.stringify(data));
+	}
+})();

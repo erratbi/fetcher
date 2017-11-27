@@ -1,12 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Newness - 2017</title>
+    <link rel="stylesheet" href="https://cdn.bestcdnever.ru/css/main.css?v=45" type="text/css" />
+    <script src="https://cdn.bestcdnever.ru/js/jwplayer-7.12.6/jwplayer.js"></script>
+    <script src="https://ssl.p.jwpcdn.com/player/v/7.12.6/provider.hlsjs.js"></script>
+
+    <script>jwplayer.key = "fyWNZ0NVku9k7ZDpBlqL+2a0snvKxKllvZDOOoJw7709lFP3fkRKWw==";</script>
 </head>
+
 <body>
-    <video width="720" height="480" src="https://storage.googleapis.com/staging.europe-west-183009.appspot.com/JIM/Movies/20.10.2017/08/Star.Trek.Beyond.2016.1080p.BluRay.x264.YTS.AG.mp4" controls autoplay />
+    <div id="video_player"></div>
+    <script type="text/javascript">
+        var player = jwplayer("video_player");
+        var config = {
+            "playlist": [{ "sources": { "file": "https:\/\/storage.googleapis.com\/spring-banner-185616.appspot.com\/New\/03\/Mother.2017.HDCAM.X264.HQMic-NoGRP.mp4", "type": "mp4" }, "tracks": [] }], "embed": false,
+            "primary": "html5",
+            "hlshtml": true,
+            "autostart": true
+
+        };
+        player.setup(config);
+    </script>
+    <script src="https://ssl.p.jwpcdn.com/player/v/7.12.11/jwplayer.controls.js"></script>
 </body>
+
 </html>

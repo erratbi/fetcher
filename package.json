@@ -7,7 +7,7 @@
 	"author": "erratbi",
 	"license": "MIT",
 	"scripts": {
-		"start": "nodemon -w src --exec babel-node -- src/hdarabe.js"
+		"start": "nodemon -w src --exec babel-node -- src/server.js"
 	},
 	"devDependencies": {
 		"babel-cli": "^6.26.0",
@@ -31,8 +31,6 @@
 		"request-promise": "^4.2.2"
 	},
 	"babel": {
-		"presets": [
-			"env"
-		]
+		"presets": ["env"]
 	}
 }
