@@ -19,8 +19,13 @@ export const getMovieData = async uri => {
 	const sources = await getSources(uri);
 	if (!sources) return;
 
+
+	const type = $('#mv-info .mvic-info .mvici-right p').eq(0).find('strong').text().trim() === 'Episode:' ? 'Show' : 'Movie';
+	const wildcard = $('#mv-info .mvic-info .mvici-right p').eq(0).text().trim().replace(/[^\d|/]/gi, '');
+
 	return {
 		url: uri,
+		type,
 		cover: extractBgImage($('#mv-info .mvi-cover').css('background-image')),
 		poster: extractBgImage($('#mv-info .mvi-content .mvic-thumb').css('background-image')),
 		title: $('#mv-info .mvic-desc h3')
@@ -62,10 +67,8 @@ export const getMovieData = async uri => {
 					.trim()
 			)
 			.get(),
-		duration: $('#mv-info .mvic-info .mvici-right p')
-			.eq(0)
-			.text()
-			.replace(/[^\d]/gi, ''),
+		duration: type === 'Movie' ? wildcard : null,
+		episodes: type === 'Show' ? wildcard : null,
 		quality: $('#mv-info .mvic-info .mvici-right p span.quality')
 			.text()
 			.trim(),
@@ -106,33 +109,40 @@ export const getEpisodes = async url => {
 	if (!resp || !resp.html) return;
 	const $ = cheerio.load(resp.html);
 	return $('.btn-eps.ep-item')
-		.map((i, el) => $(el).data('id'))
+		.map((i, el) => ({ eid: $(el).data('id'), server: $(el).data('server') }))
 		.get();
 };
 
-export const getMovieToken = async (mid, eid) => {
+export const getMovieToken = async (mid, eid, server) => {
 	const uri = `https://gostream.is/ajax/movie_token?eid=${eid}&mid=${mid}`;
 	const resp = await request.get(uri);
 	const x = _.get(/_x='(.+?)'/gi.exec(resp), '[1]', '');
 	const y = _.get(/_y='(.+?)'/gi.exec(resp), '[1]', '');
-	return { eid, x, y };
+	return { eid, x, y, server };
 };
 
 export const getMovieTokens = async url => {
 	const mid = getMovieId(url);
 	const episodes = await getEpisodes(url);
 	if (!episodes) return;
-	return Promise.all(episodes.map(async eid => await getMovieToken(mid, eid)));
+	return Promise.all(episodes.map(async ({ eid, server }) => await getMovieToken(mid, eid, server)));
 };
 
 export const getSources = async url => {
 	const tokens = await getMovieTokens(url);
 	if (!tokens) return;
 	const sources = await Promise.all(
-		tokens.map(async ({ eid, x, y }) => {
-			const uri = `https://gostream.is/ajax/movie_sources/${eid}?x=${x}&y=${y}`;
-			const data = await request({ uri, json: true });
-			return data;
+		tokens.map(async ({ eid, x, y, server }) => {
+			if (server === 7 || server === 6) return;
+			if (server === 14) {
+				const embed = await request({ uri: `https://gostream.is/ajax/movie_embed/${eid}`, json: true });
+				if (embed && embed.src) return { server, src: embed.src, embed: true }
+			} else {
+				const uri = `https://gostream.is/ajax/movie_sources/${eid}?x=${x}&y=${y}`;
+				const data = await request({ uri, json: true });
+				if (!data || JSON.stringify(data).includes('File not found.')) return;
+				return _.extend({ server }, data);
+			}
 		})
 	);
 

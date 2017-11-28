@@ -10,19 +10,37 @@
     <script src="https://cdn.bestcdnever.ru/js/jwplayer-7.12.6/jwplayer.js"></script>
     <script src="https://ssl.p.jwpcdn.com/player/v/7.12.6/provider.hlsjs.js"></script>
 
-    <script>jwplayer.key = "fyWNZ0NVku9k7ZDpBlqL+2a0snvKxKllvZDOOoJw7709lFP3fkRKWw==";</script>
+    <script>jwplayer.key = "r/viHfrthMvlepAj1LfUPgiRYNSo17HhByHoAIZ4D0s=";</script>
 </head>
 
 <body>
-    <div id="video_player"></div>
+    <p>
+        ssdsd
+        <%- JSON.stringify(playlist) %>
+    </p>
+    <div id="video_player">
+    </div>
     <script type="text/javascript">
         var player = jwplayer("video_player");
         var config = {
-            "playlist": [{ "sources": { "file": "https:\/\/storage.googleapis.com\/spring-banner-185616.appspot.com\/New\/03\/Mother.2017.HDCAM.X264.HQMic-NoGRP.mp4", "type": "mp4" }, "tracks": [] }], "embed": false,
-            "primary": "html5",
-            "hlshtml": true,
-            "autostart": true
-
+            playlist: <%- JSON.stringify(playlist) %>,
+            allowfullscreen: true,
+            width: '100%',
+            height: '500px',
+            autostart: true,
+            cast: {},
+            captions: {
+                color: '#f3f378',
+                fontSize: 16,
+                backgroundOpacity: 0,
+                fontfamily: 'Helvetica',
+                edgeStyle: 'raised'
+            },
+            skin: {
+                active: '#c91c54',
+                inactive: 'white',
+                background: 'black'
+            }
         };
         player.setup(config);
     </script>
