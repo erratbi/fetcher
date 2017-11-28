@@ -1,4 +1,5 @@
 import request from 'request-promise';
+import req from 'request'
 import _ from 'lodash';
 import cheerio from 'cheerio';
 
@@ -7,25 +8,36 @@ export const getMoviesUrls = async (page = 1) => {
 
 	const $ = await request({ uri, transform: body => cheerio.load(body) });
 
-	return $('.movies-list .ml-item > a')
-		.map((i, el) => $(el).attr('href'))
-		.get();
+	return $('.movies-list .ml-item > a').map((i, el) => $(el).attr('href')).get();
 };
+
+export const makeRequest = async (uri, jquery = true, json = false, attempt = 1) => {
+	console.log(attempt);
+	if (attempt > 3) return false;
+	const resp = await request({ uri, resolveWithFullResponse: true, json });
+	if (resp.statusCode !== 200 || !resp.body || resp.body.includes('Service is unavailable')) return await makeRequest(url, jquery, json, (attempt + 1))
+	if (jquery) return cheerio.load(resp.body);
+	else return resp.body;
+}
 
 export const extractBgImage = raw => _.get(/url=(.*?)\)$/gi.exec(raw), '[1]', '');
 
 export const getMovieData = async uri => {
-	const $ = await request({ uri, transform: body => cheerio.load(body) });
+	let $;
+	try {
+		$ = await makeRequest(uri, true);
+		console.log($('*').html());
+
+	} catch (error) {
+		return false;
+	}
 	const sources = await getSources(uri);
 	if (!sources) return;
 
 
-	const type = $('#mv-info .mvic-info .mvici-right p').eq(0).find('strong').text().trim() === 'Episode:' ? 'Show' : 'Movie';
-	const wildcard = $('#mv-info .mvic-info .mvici-right p').eq(0).text().trim().replace(/[^\d|/]/gi, '');
 
 	return {
 		url: uri,
-		type,
 		cover: extractBgImage($('#mv-info .mvi-cover').css('background-image')),
 		poster: extractBgImage($('#mv-info .mvi-content .mvic-thumb').css('background-image')),
 		title: $('#mv-info .mvic-desc h3')
@@ -67,8 +79,10 @@ export const getMovieData = async uri => {
 					.trim()
 			)
 			.get(),
-		duration: type === 'Movie' ? wildcard : null,
-		episodes: type === 'Show' ? wildcard : null,
+		duration: $('#mv-info .mvic-info .mvici-right p')
+			.eq(0)
+			.text()
+			.replace(/[^\d]/gi, ''),
 		quality: $('#mv-info .mvic-info .mvici-right p span.quality')
 			.text()
 			.trim(),
@@ -136,12 +150,18 @@ export const getSources = async url => {
 			if (server === 7 || server === 6) return;
 			if (server === 14) {
 				const embed = await request({ uri: `https://gostream.is/ajax/movie_embed/${eid}`, json: true });
-				if (embed && embed.src) return { server, src: embed.src, embed: true }
+				if (embed && embed.src) return { src: embed.src, embed: true, server }
 			} else {
-				const uri = `https://gostream.is/ajax/movie_sources/${eid}?x=${x}&y=${y}`;
-				const data = await request({ uri, json: true });
-				if (!data || JSON.stringify(data).includes('File not found.')) return;
-				return _.extend({ server }, data);
+				try {
+
+					const url = `https://gostream.is/ajax/movie_sources/${eid}?x=${x}&y=${y}`;
+					const data = await makeRequest(url, false, true)
+					console.log(data);
+					if (!data || JSON.stringify(data).includes('File not found.')) return;
+					return _.extend({ server }, data);
+				} catch (error) {
+					return;
+				}
 			}
 		})
 	);

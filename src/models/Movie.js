@@ -9,7 +9,7 @@ export default class Movie {
 
 	static async init(uri) {
 		const obj = await getMovieData(uri);
-		if (!obj) return;
+		if (!obj) return false
 		return new Movie(obj);
 	}
 }
